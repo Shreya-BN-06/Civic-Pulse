@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicPulse - AI-Powered Community Issue Resolution Platform</title>
+    <meta name="description" content="An intelligent citizen collaboration platform enabling real-time community issue reporting, AI-powered classification, geotagged mapping, verification, and predictive city insights.">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" aria-label="Sidebar Navigation">
+            <div class="sidebar-brand">
+                <span class="logo-icon">📢</span>
+                <h2>Civic<br><span class="highlight">Pulse</span></h2>
+            </div>
+            
+            <nav class="sidebar-nav" aria-label="Main Navigation">
+                <button class="nav-btn active" data-tab="tab-dashboard" id="navDashboardBtn">
+                    <span class="icon">📊</span> Dashboard Overview
+                </button>
+                <button class="nav-btn" data-tab="tab-map" id="navMapBtn">
+                    <span class="icon">🗺️</span> Explore Map
+                </button>
+                <button class="nav-btn" data-tab="tab-report" id="navReportBtn">
+                    <span class="icon">✍️</span> Report Issue
+                </button>
+                <button class="nav-btn" data-tab="tab-insights" id="navInsightsBtn">
+                    <span class="icon">🧠</span> Predictive Insights
+                </button>
+                <button class="nav-btn" data-tab="tab-gamification" id="navGamificationBtn">
+                    <span class="icon">🏆</span> Leaderboard & Rewards
+                </button>
+            </nav>
+
+            <!-- User Widget in Sidebar -->
+            <div class="user-widget" id="sidebarUserWidget">
+                <div class="user-widget-header">
+                    <div class="user-avatar" id="widgetAvatar">⭐</div>
+                    <div class="user-info">
+                        <div class="user-name" id="widgetName">You (Citizen Hero)</div>
+                        <div class="user-level" id="widgetLevel">Level 3</div>
+                    </div>
+                </div>
+                <div class="user-points-bar">
+                    <div class="user-points-progress" id="widgetProgress" style="width: 76%;"></div>
+                </div>
+                <div class="user-stats-row">
+                    <span>Points: <strong id="widgetPoints">380</strong></span>
+                    <span>Badges: <strong id="widgetBadgeCount">4</strong></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div>
+                    <h1 id="pageTitle">Dashboard Overview</h1>
+                    <p class="subtitle" id="pageSubtitle">Real-time statistics and community activity trends</p>
+                </div>
+                <div class="header-controls">
+                    <button id="themeToggle" class="theme-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                        <span id="themeIcon">☀️</span>
+                    </button>
+                    <div class="status-badge">
+                        <span class="dot"></span>
+                        <span id="simStatus">Pulse Active</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 1. TAB: Dashboard / Overview -->
+            <div id="tab-dashboard" class="tab-pane active" role="tabpanel">
+                <!-- KPI Summary cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card emerald" id="kpiResolved">
+                        <div class="kpi-title">Resolved Issues</div>
+                        <div class="kpi-value" id="kpiResolvedVal">1</div>
+                        <div class="kpi-footer">
+                            <span>Community repairs</span>
+                            <span class="kpi-trend up">80% Rate</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card amber" id="kpiInProgress">
+                        <div class="kpi-title">In Progress</div>
+                        <div class="kpi-value" id="kpiInProgressVal">2</div>
+                        <div class="kpi-footer">
+                            <span>Under active maintenance</span>
+                            <span class="kpi-trend-neutral">Current Status</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card rose" id="kpiCritical">
+                        <div class="kpi-title">Critical Hazards</div>
+                        <div class="kpi-value" id="kpiCriticalVal">2</div>
+                        <div class="kpi-footer">
+                            <span>High-safety risk issues</span>
+                            <span class="kpi-trend down">Immediate Action</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card purple" id="kpiTotalReports">
+                        <div class="kpi-title">Total Reports</div>
+                        <div class="kpi-value" id="kpiTotalReportsVal">5</div>
+                        <div class="kpi-footer">
+                            <span>Registered citizens</span>
+                            <span class="kpi-trend up">+3 today</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <!-- Chart 1: Active Issues by Category -->
+                    <div class="chart-container glass-panel">
+                        <h3>Issues Breakdown by Category</h3>
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Timeline Feed -->
+                    <div class="glass-panel" style="display: flex; flex-direction: column;">
+                        <div class="panel-header">
+                            <h2>Recent Activity Feed</h2>
+                        </div>
+                        <div class="recent-activity-list" id="activityFeed">
+                            <!-- Populated dynamically in app.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Public-facing Ward/District Dashboard -->
+                <section class="glass-panel" aria-labelledby="wardDashboardTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 id="wardDashboardTitle">📍 District & Ward Performance Hub</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                                Public transparency scorecard tracking open cases, resolution speeds, and department efficiency metrics.
+                            </p>
+                        </div>
+                        <div style="margin-bottom: 0; width: 240px;">
+                            <select id="dashboardWardSelector" class="modern-select" aria-label="Select Ward/District">
+                                <option value="Ward 84 - Indiranagar">Ward 84 - Indiranagar</option>
+                                <option value="Ward 150 - Bellandur">Ward 150 - Bellandur</option>
+                                <option value="Ward 22 - Koramangala">Ward 22 - Koramangala</option>
+                                <option value="Ward 10 - Malleshwaram">Ward 10 - Malleshwaram</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ward Performance Grid -->
+                    <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+                        <div class="kpi-card purple" style="padding: 1.2rem; min-height: auto;">
+                            <div class="kpi-title" style="font-size: 0.75rem;">Open Case Count</div>
+                            <div class="kpi-value" id="wardOpenCount" style="font-size: 1.8rem; margin: 0.5rem 0;">4</div>
+                            <div class="kpi-footer" style="font-size: 0.75rem;">Active investigations</div>
+                        </div>
+                        <div class="kpi-card emerald" style="padding: 1.2rem; min-height: auto;">
+                            <div class="kpi-title" style="font-size: 0.75rem;">Median Resolution Time</div>
+                            <div class="kpi-value" id="wardMedianResolution" style="font-size: 1.8rem; margin: 0.5rem 0;">4.2 days</div>
+                            <div class="kpi-footer" style="font-size: 0.75rem;">Target SLA: 7 days</div>
+                        </div>
+                        <div class="kpi-card amber" style="padding: 1.2rem; min-height: auto;">
+                            <div class="kpi-title" style="font-size: 0.75rem;">Primary Issue Domain</div>
+                            <div class="kpi-value" id="wardPrimaryCategory" style="font-size: 1.2rem; margin: 0.5rem 0; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Roads</div>
+                            <div class="kpi-footer" style="font-size: 0.75rem;">Most reported category</div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Scorecards & Resolution Trends Split -->
+                    <div class="charts-grid" style="grid-template-columns: 1.2fr 1fr; margin-bottom: 0;">
+                        <!-- Department scorecards -->
+                        <div class="chart-container" style="background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); padding: 1.2rem;">
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">🏢 Department-Level Efficiency Scorecard</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.8rem;" id="wardScorecardList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Ward Resolution Trends chart -->
+                        <div class="chart-container" style="background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); padding: 1.2rem; display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem;">📈 Resolution Speed Trend</h3>
+                            <div style="flex: 1; min-height: 180px; position: relative;">
+                                <canvas id="wardTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Category Filters Widget -->
+                <section class="glass-panel" aria-labelledby="categoryQuickFilterTitle">
+                    <h2 id="categoryQuickFilterTitle" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Issues by Domain Category</h2>
+                    <div class="category-stats-grid" id="categoryStatsGrid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- 2. TAB: Explore / Map View -->
+            <div id="tab-map" class="tab-pane" role="tabpanel">
+                <div class="map-explorer-layout">
+                    <!-- Main Map visualization -->
+                    <div class="map-wrapper">
+                        <div id="mainMap" style="width: 100%; height: 100%; z-index: 1;"></div>
+                    </div>
+
+                    <!-- Map Sidebar / Search / Quick List -->
+                    <div class="issue-list-sidebar">
+                        <div class="sidebar-search">
+                            <span class="search-icon-inside">🔍</span>
+                            <input type="text" id="mapSearchInput" class="modern-input" placeholder="Search by keyword..." aria-label="Search issues">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select id="mapCategoryFilter" class="modern-select" aria-label="Filter by Category">
+                                <option value="All">All Categories</option>
+                                <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                                <option value="Water & Sanitation">Water & Sanitation</option>
+                                <option value="Waste Management">Waste Management</option>
+                                <option value="Public Safety">Public Safety</option>
+                                <option value="Electricity & Streetlights">Electricity & Streetlights</option>
+                            </select>
+                        </div>
+
+                        <div class="issues-scroll-list" id="mapScrollList">
+                            <!-- Issue cards appended dynamically in app.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. TAB: Report Issue -->
+            <div id="tab-report" class="tab-pane" role="tabpanel">
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <h2>Report a Community Issue</h2>
+                        <span class="status-badge" style="background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2); color: var(--primary);">
+                            🧠 AI Categorization Active
+                        </span>
+                    </div>
+
+                    <form id="reportIssueForm">
+                        <div class="form-grid">
+                            <!-- Left inputs -->
+                            <div>
+                                <div class="form-group">
+                                    <label for="issueTitle">Issue Title</label>
+                                    <input type="text" id="issueTitle" class="modern-input" placeholder="e.g. Large pothole on main avenue" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issueDesc">Description & Details</label>
+                                    <textarea id="issueDesc" class="modern-textarea" rows="5" placeholder="Provide as much detail as possible (e.g. size, exact landmark, safety hazard, etc.). Type keywords like 'leak', 'pothole', 'garbage', or 'cable' to see AI categorization." required></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issueCategory">Category</label>
+                                    <select id="issueCategory" class="modern-select">
+                                        <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                                        <option value="Water & Sanitation">Water & Sanitation</option>
+                                        <option value="Waste Management">Waste Management</option>
+                                        <option value="Public Safety">Public Safety</option>
+                                        <option value="Electricity & Streetlights">Electricity & Streetlights</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issuePriority">Priority Level</label>
+                                    <select id="issuePriority" class="modern-select">
+                                        <option value="Low">Low (Non-urgent improvement)</option>
+                                        <option value="Medium" selected>Medium (Standard issue)</option>
+                                        <option value="High">High (Disruptive or hazardous)</option>
+                                        <option value="Critical">Critical (Immediate danger/blockage)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right inputs (Media upload + location picker) -->
+                            <div>
+                                <div class="form-group">
+                                    <label>Upload Media (Image / Video)</label>
+                                    <div class="upload-container" id="uploadArea">
+                                        <span class="upload-icon">📸</span>
+                                        <div class="upload-text">
+                                            <strong>Click to upload</strong> or drag and drop<br>
+                                            <span style="font-size: 0.75rem; color: var(--text-muted);">PNG, JPG or MP4 (Max 10MB)</span>
+                                        </div>
+                                        <input type="file" id="issueMedia" accept="image/*,video/*" style="display: none;">
+                                        <div class="upload-preview" id="uploadPreview">
+                                            <img src="" id="previewImg" alt="Media Preview">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Select Location on Map</label>
+                                    <div style="height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border);">
+                                        <div id="reportMiniMap" style="width: 100%; height: 100%;"></div>
+                                    </div>
+                                    <div class="location-picker-indicator">
+                                        📍 Selected: <span id="reportCoordsText">12.9716, 77.5946 (Click mini-map to reposition)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic AI Assistant panel -->
+                                <div class="ai-copilot-card">
+                                    <div class="ai-header">
+                                        <span class="ai-icon">🤖</span>
+                                        <span>CivicPulse AI Copilot</span>
+                                    </div>
+                                    <div class="ai-suggestion-box">
+                                        <p style="font-size: 0.8rem; line-height: 1.4;" id="aiCopilotStatus">
+                                            Start typing description to trigger automated AI scans.
+                                        </p>
+                                        <div id="aiSuggestionsPills" style="display: none; gap: 0.5rem; flex-wrap: wrap;">
+                                            <span class="ai-pill" id="aiPillCategory">🏷️ Category: Roads</span>
+                                            <span class="ai-pill" id="aiPillPriority">⚠️ Priority: High</span>
+                                            <span class="ai-pill" id="aiPillConfidence">🔒 Conf: 95%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn-primary">
+                                🚀 File Official Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. TAB: Predictive Insights -->
+            <div id="tab-insights" class="tab-pane" role="tabpanel">
+                <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 2rem;">
+                    <!-- Historical growth curves -->
+                    <div class="chart-container glass-panel">
+                        <h3>AI Hotspot Forecast Trends</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            Historical vs. Predicted monthly issues comparing reported to resolved pace.
+                        </p>
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="historicalTrendsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Risk Analysis / Heatmap intro -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <h2>Infrastructure Risk Assessment</h2>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+                            Our predictive analytics engine scans citizen reports, historical recurrence rates, structural age models, and external sensor feeds (such as rainfall metrics and water flow sensors) to identify pre-emptive points of failure.
+                        </p>
+                        <div style="background: rgba(6, 182, 212, 0.04); border: 1px solid rgba(6, 182, 212, 0.2); padding: 1.2rem; border-radius: 16px;">
+                            <h4 style="color: var(--accent-cyan); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>⚡</span> Predictive Resource Allocation
+                            </h4>
+                            <p style="font-size: 0.8rem; line-height: 1.4; color: var(--text-secondary);">
+                                By mapping issues early, municipal authorities can dispatch maintenance crews to clean sewers and repair micro-cracks before they expand, saving up to 60% in civic budget allocations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- List of Predictive Maintenance Alerts -->
+                <section class="glass-panel" aria-labelledby="insightsAlertsTitle">
+                    <div class="panel-header">
+                        <h2 id="insightsAlertsTitle">Active AI Maintenance Alerts</h2>
+                        <span class="status-badge" style="background: rgba(244, 63, 94, 0.08); border-color: rgba(244, 63, 94, 0.2); color: var(--accent-rose);">
+                            ⚠️ 3 Anomaly Warnings
+                        </span>
+                    </div>
+                    <div id="predictiveAlertsGrid">
+                        <!-- Loaded dynamically from data.js models -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- 5. TAB: Gamification & Rewards -->
+            <div id="tab-gamification" class="tab-pane" role="tabpanel">
+                <div class="gamify-layout">
+                    <!-- Badges Grid and Progress -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <h2>Your Civic Achievements</h2>
+                            <span class="status-badge" style="background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); color: var(--accent-purple);">
+                                💎 <span id="rewardsUserPts">380</span> PTS Unlocked
+                            </span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.4;">
+                            Report verified issues, double-check reports in your neighborhood, and submit resolution photos to gain points and level up!
+                        </p>
+
+                        <div class="badge-grid" id="achievementsGrid">
+                            <!-- Dynamically populated badge cards -->
+                        </div>
+                    </div>
+
+                    <!-- Challenges & Leaderboard -->
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- Weekly Challenges -->
+                        <div class="glass-panel" style="margin-bottom: 0;">
+                            <div class="panel-header">
+                                <h2>Weekly Community Challenges</h2>
+                            </div>
+                            <div id="challengesContainer">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Leaderboard -->
+                        <div class="glass-panel" style="margin-bottom: 0;">
+                            <div class="panel-header">
+                                <h2>Top Citizens Leaderboard</h2>
+                            </div>
+                            <div class="leaderboard-list" id="leaderboardContainer">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Issue Detail Overlay Modal -->
+    <div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-labelledby="modalIssueTitle">
+        <div class="detail-modal">
+            <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal">✕</button>
+            <div class="detail-modal-content">
+                <div class="modal-title-row">
+                    <span class="badge-priority" id="modalPriority">High</span>
+                    <h2 id="modalIssueTitle" style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem;">Broken Streetlights on 3rd Avenue</h2>
+                    <div class="modal-meta">
+                        <span id="modalId" style="font-weight: 700; color: var(--primary);">CP-103</span>
+                        <span id="modalReporter">By: Ananya Hegde</span>
+                        <span id="modalDate">Reported: 24 Jun 2026</span>
+                        <span id="modalCategory" style="color: var(--accent-cyan);">Electricity & Streetlights</span>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Left: Description, Image, Timeline -->
+                    <div>
+                        <div class="form-group">
+                            <label>Issue Media Preview</label>
+                            <div class="detail-img-box" id="modalImgContainer">
+                                <img src="" id="modalImg" alt="Issue Attachment">
+                                <div class="detail-gradient-fallback" id="modalImgFallback"></div>
+                                <div class="detail-gradient-logo" id="modalImgFallbackLogo">📍</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Citizen Description</label>
+                            <p style="font-size: 0.95rem; line-height: 1.5; color: var(--text-secondary);" id="modalDescription">
+                                Description text goes here.
+                            </p>
+                        </div>
+
+                        <!-- Discussion section -->
+                        <div class="discussion-section">
+                            <label>Community Discussion (<span id="commentsCountText">0</span>)</label>
+                            <div class="comments-feed" id="modalCommentsFeed">
+                                <!-- Comment items appended dynamically -->
+                            </div>
+                            <div class="comment-input-box" style="margin-top: 1rem;">
+                                <input type="text" id="newCommentInput" class="modern-input" placeholder="Type a helpful comment or update..." aria-label="Write a comment">
+                                <button class="btn-primary" id="btnPostComment" style="padding: 0.9rem 1.2rem;">Post</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Verification details and timeline -->
+                    <div>
+                        <div class="verification-widget">
+                            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Citizen Endorsement</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                Do you verify this issue exists and is active? Community verification fast-tracks municipal intervention.
+                            </p>
+                            <div class="votes-count" id="modalVotesCount">18</div>
+                            <button class="btn-verify" id="modalVerifyBtn">
+                                Upvote & Verify Issue
+                            </button>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 2rem;">
+                            <label>Resolution Timeline</label>
+                            <div class="timeline-flow" id="modalTimeline">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Area -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Inject baseline datasets script -->
+    <script src="data.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Main Controller -->
+    <script src="app.js"></script>
+</body>
+</html>
